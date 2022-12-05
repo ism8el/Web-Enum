@@ -3,6 +3,7 @@
 import requests
 import re
 import sys
+import ast
 
 class bcolors:
     HEADER = '\033[95m'
@@ -21,6 +22,20 @@ except IndexError:
 	print(bcolors.WARNING + "\nUsage: python3 xss-detector.py <url_to_test> (Ex: python3 xss-detector.py http://example.fr/)\n" + bcolors.ENDC)
 	exit()
 
+try:
+	sys.argv[2]
+	if sys.argv[2] == "all":
+		all = 1
+except IndexError:
+	all = 0
+
+cookie = input(bcolors.OKCYAN + "Enter cookies like this: {'PHPSESSID':'1841ed304c0911ed9609c', 'lang':'fr'} (press ENTER for nothing): " + bcolors.ENDC)
+try:
+	cookie
+	cookie = ast.literal_eval(cookie)
+except SyntaxError:
+	cookie = {}
+
 url = sys.argv[1]
 path = sys.argv[1]
 
@@ -31,13 +46,13 @@ print(bcolors.OKCYAN + "URL found:" + bcolors.ENDC)
 
 def discover(url):
 	try:
-		resp = requests.get(url, timeout=10, headers = { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36"})
+		resp = requests.get(url, timeout=10, cookies=cookie, headers = { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36"})
 		content = resp.text
 
 		for line in content.split():
 			for word in line.split():
 				try:
-					if "@" in word or "mailto" in word or ".html" in word or ".7z" in word or "#" in word or ".png" in word or ".jpg" in word or ".svg" in word or ".jpeg" in word or ".ico" in word or ".css" in word or ".js" in word or ".zip" in word or ".pdf" in word or ".txt" in word or ".gif" in word or ".JPEG" in word or ".PNG" in word or ".JPG" in word:
+					if all != 1 and ("@" in word or "mailto" in word or ".html" in word or ".7z" in word or "#" in word or ".png" in word or ".jpg" in word or ".svg" in word or ".jpeg" in word or ".ico" in word or ".css" in word or ".js" in word or ".zip" in word or ".pdf" in word or ".txt" in word or ".gif" in word or ".JPEG" in word or ".PNG" in word or ".JPG" in word):
 						pass
 					else:
 						if 'href="' in word:
