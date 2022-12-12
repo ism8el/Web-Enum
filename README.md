@@ -6,9 +6,9 @@ By default the script ignores images, css and js files as well as compressed fil
 
 ## Usage
 
->./XSS-Detector http://example.fr/
+>./web-enum.py http://example.fr/
 
 And to include images and files CSS, JS, etc...
 
->./XSS-Detector http://example.fr/ all
+>./web-enum.py http://example.fr/ all
 
