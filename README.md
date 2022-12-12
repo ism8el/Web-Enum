@@ -12,3 +12,5 @@ And to include images and files CSS, JS, etc...
 
 >./web-enum.py http://example.fr/ all
 
+
+![](https://github.com/ism8el/Web-Enum/blob/main/web-enum.png)
