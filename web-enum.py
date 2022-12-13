@@ -32,7 +32,7 @@ print(bcolors.FAIL + """\n\n
 try:
 	sys.argv[1]
 except IndexError:
-	print(bcolors.WARNING + "\nUsage: python3 xss-detector.py <url_to_test> (Ex: python3 xss-detector.py http://example.fr/ all)\n" + bcolors.ENDC)
+	print(bcolors.WARNING + "\nUsage: python3 web-enum.py <url_to_test> (Ex: python3 web-enum.py http://example.fr/ all)\n" + bcolors.ENDC)
 	exit()
 
 try:
@@ -66,6 +66,7 @@ o = []
 m = 0
 d=[]
 
+
 if str(url[-1]) == "/":
 	url = url.rsplit(separator2, 1)[0]
 	path = url
@@ -77,18 +78,19 @@ except:
 	print(bcolors.FAIL + "\nFailed to establish connection with ", url + bcolors.ENDC)
 	exit()
 
-print(bcolors.BOLD + bcolors.OKCYAN + "\nSearching misconf :" + bcolors.ENDC)
+print(bcolors.BOLD + bcolors.FAIL + "\nSearching misconf :" + bcolors.ENDC)
 misconf = ["/robots.txt", "/server-status", "/.git", "/git", "/.gitignore", "/.htpasswd", "/.htaccess", "/phpmyadmin", "/adminer.php", "/index.php~", "/index.php.old", "/README.md", "/.env", "/TODO.md", "/LICENCE.txt", "/LICENCE", "/htaccess.txt", "/phpinfo.php", "/.ssh", "/install", "/install.php", "/LICENSE", "/LICENSE.txt", "/server-info"]
 for x in misconf:
-	t1 = requests.get(url + x, timeout=10, cookies=cookie, verify=False, headers = {"User-Agent": useragent})
+	t1 = requests.get(url + "/../../../../" + x, timeout=10, cookies=cookie, verify=False, headers = {"User-Agent": useragent})
 	if t1.status_code == 200:
 		print(bcolors.OKGREEN + "[MISCONF] " + bcolors.ENDC + bcolors.OKCYAN + x + " was found" + bcolors.ENDC)
 		m = 1
 if m == 0:
-	print(bcolors.FAIL + "\nNo misconf find ", url + bcolors.ENDC)
+	print(bcolors.FAIL + "\nNo misconf find !", url + bcolors.ENDC)
 
 
-print(bcolors.BOLD + bcolors.OKCYAN + "\nURL found:" + bcolors.ENDC)
+print(bcolors.OKCYAN + "\n----------------------------------------" + bcolors.ENDC)
+print(bcolors.BOLD + bcolors.FAIL + "\nURL found:" + bcolors.ENDC)
 
 def discover(url):
 	try:
@@ -222,13 +224,13 @@ while y < len(o):
 
 if len(o) != 0:
 	print(bcolors.OKCYAN + "\n----------------------------------------\n" + bcolors.ENDC)
-	print(bcolors.BOLD + bcolors.OKCYAN + "All URL found on :", path + bcolors.ENDC)
+	print(bcolors.BOLD + bcolors.FAIL + "All URL found on :", path + bcolors.ENDC)
 	y=0
 	while y < len(o):
 		print(o[y].replace('//', '/'))
 		y = y + 1
 else:
-	print(bcolors.FAIL + "\nNo URL founds" + bcolors.ENDC)
+	print(bcolors.FAIL + "\nNo URL founds !" + bcolors.ENDC)
 
 if len(o) != 0:
 	print(bcolors.OKCYAN + "\n----------------------------------------\n" + bcolors.ENDC)
@@ -236,12 +238,15 @@ if len(o) != 0:
 
 try:
 	if testcode == "y" or testcode == "Y" or testcode == "":
+		print(bcolors.BOLD + bcolors.FAIL + "All status code:" + bcolors.ENDC)
 		for x in o:
 			code = requests.get(x, timeout=10, cookies=cookie, verify=False, headers = {"User-Agent": useragent})
 			if code.status_code == 200:
 				code = (bcolors.OKGREEN + "[200] " + bcolors.ENDC)
 			elif code.status_code == 403:
 				code = (bcolors.FAIL + "[403] " + bcolors.ENDC)
+			elif code.status_code == 404:
+				code = (bcolors.WARNING + "[404] " + bcolors.ENDC)
 				forbidden.append(x)
 			else:
 				code = (bcolors.WARNING + "[" + str(code.status_code) + "] " + bcolors.ENDC)
@@ -253,11 +258,11 @@ except:
 
 if len(forbidden) != 0:
 	print(bcolors.OKCYAN + "\n----------------------------------------\n" + bcolors.ENDC)
-	bypass = input(bcolors.BOLD + bcolors.OKCYAN + "Do you want to test bypass each 403 page ? [Y/n]: " + bcolors.ENDC)
+	bypass = input(bcolors.BOLD + bcolors.OKCYAN + "Do you want to try bypass each 403 page ? [Y/n]: " + bcolors.ENDC)
 else:
 	bypass = 0
 if bypass == "y" or bypass == "Y" or bypass == "":
-	print(bcolors.BOLD + bcolors.OKCYAN + "All 403 Bypass found:", path + bcolors.ENDC)
+	print(bcolors.BOLD + bcolors.FAIL + "All 403 Bypass found:" + bcolors.ENDC)
 	for x in forbidden:
 		urll = x.rsplit(separator2, 1)[1]
 		arg = x.rsplit(separator2, 1)[0]
