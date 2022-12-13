@@ -237,7 +237,7 @@ if len(o) != 0:
 try:
 	if testcode == "y" or testcode == "Y" or testcode == "":
 		for x in o:
-			code = requests.get(url, timeout=10, cookies=cookie, verify=False, headers = {"User-Agent": useragent})
+			code = requests.get(x, timeout=10, cookies=cookie, verify=False, headers = {"User-Agent": useragent})
 			if code.status_code == 200:
 				code = (bcolors.OKGREEN + "[200] " + bcolors.ENDC)
 			elif code.status_code == 403:
