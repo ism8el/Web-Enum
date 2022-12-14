@@ -5,6 +5,7 @@ import re
 import sys
 import ast
 import urllib3
+import random
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -19,7 +20,12 @@ class bcolors:
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
 
-print(bcolors.FAIL + """\n\n
+def color():
+	color = random.randint(91,93)
+	color = '\033[' + str(color) + 'm'
+	return color
+
+print(color() + """\n\n
  ▄█     █▄     ▄████████ ▀█████████▄          ▄████████ ███▄▄▄▄   ███    █▄    ▄▄▄▄███▄▄▄▄   
 ███     ███   ███    ███   ███    ███        ███    ███ ███▀▀▀██▄ ███    ███ ▄██▀▀▀███▀▀▀██▄ 
 ███     ███   ███    █▀    ███    ███        ███    █▀  ███   ███ ███    ███ ███   ███   ███ 
@@ -42,14 +48,14 @@ try:
 except IndexError:
 	all = 0
 
-cookie = input(bcolors.OKCYAN + "\nEnter cookies like this: {'PHPSESSID':'1841ed304c0911ed9609c', 'lang':'fr'} (press ENTER for nothing): " + bcolors.ENDC)
+cookie = input(bcolors.BOLD + bcolors.OKBLUE + "\nEnter cookies like this: {'PHPSESSID':'1841ed304c0911ed9609c', 'lang':'fr'} (press ENTER for nothing): " + bcolors.ENDC)
 try:
 	cookie
 	cookie = ast.literal_eval(cookie)
 except SyntaxError:
 	cookie = {}
 
-useragent = input(bcolors.OKCYAN + "\nEnter your custom User-Agent (press ENTER for default): " + bcolors.ENDC)
+useragent = input(bcolors.BOLD + bcolors.OKBLUE + "\nEnter your custom User-Agent (press ENTER for default): " + bcolors.ENDC)
 try:
 	useragent
 except SyntaxError:
@@ -57,19 +63,13 @@ except SyntaxError:
 
 
 url = sys.argv[1]
-path = sys.argv[1]
-separator = "?"
-separator2 = "/"
 ok = 0
 forbidden = []
 o = []
 m = 0
-d=[]
-
 
 if str(url[-1]) == "/":
-	url = url.rsplit(separator2, 1)[0]
-	path = url
+	url = url.rsplit("/", 1)[0]
 
 
 try:
@@ -78,10 +78,27 @@ except:
 	print(bcolors.FAIL + "\nFailed to establish connection with ", url + bcolors.ENDC)
 	exit()
 
-print(bcolors.BOLD + bcolors.FAIL + "\nSearching misconf :" + bcolors.ENDC)
-misconf = ["/robots.txt", "/server-status", "/.git", "/git", "/.gitignore", "/.htpasswd", "/.htaccess", "/phpmyadmin", "/adminer.php", "/index.php~", "/index.php.old", "/README.md", "/.env", "/TODO.md", "/LICENCE.txt", "/LICENCE", "/htaccess.txt", "/phpinfo.php", "/.ssh", "/install", "/install.php", "/LICENSE", "/LICENSE.txt", "/server-info"]
+def path(url, strict):
+	if "http://" in url:
+		url = url.replace('http://', '')
+		pre = "http://"
+	if "https://" in url:
+		url = url.replace('https://', '')
+		pre = "https://"
+	if strict == 1:
+		url = url.split("/", 1)[0]
+		return url
+	elif strict == 2:
+		url = url.rsplit("/", 1)[0]
+		return pre + url + "/"
+	elif strict == 0:
+		url = url.split("/", 1)[0]
+		return pre + url + "/"
+
+print(bcolors.UNDERLINE + bcolors.BOLD + bcolors.FAIL + "\nSearching misconf :" + bcolors.ENDC)
+misconf = ["/robots.txt", "/server-status", "/.git", "/git", "/.gitignore", "/.htpasswd", "/.htaccess", "/phpmyadmin", "/adminer.php", "/index.php~", "/index.php.old", "/index.php.bak", "/README.md", "/README", "/.env", "/TODO.md", "/LICENCE.txt", "/LICENCE", "/htaccess.txt", "/phpinfo.php", "/.ssh", "/install", "/install.php", "/LICENSE", "/LICENSE.txt", "/server-info", "/backup.zip", "/backup", "/backups", "/archive", "/archives"]
 for x in misconf:
-	t1 = requests.get(url + "/../../../../" + x, timeout=10, cookies=cookie, verify=False, headers = {"User-Agent": useragent})
+	t1 = requests.get(path(url, 0) + x, timeout=10, cookies=cookie, verify=False, headers = {"User-Agent": useragent})
 	if t1.status_code == 200:
 		print(bcolors.OKGREEN + "[MISCONF] " + bcolors.ENDC + bcolors.OKCYAN + x + " was found" + bcolors.ENDC)
 		m = 1
@@ -90,9 +107,41 @@ if m == 0:
 
 
 print(bcolors.OKCYAN + "\n----------------------------------------" + bcolors.ENDC)
-print(bcolors.BOLD + bcolors.FAIL + "\nURL found:" + bcolors.ENDC)
+print(bcolors.UNDERLINE + bcolors.BOLD + bcolors.FAIL + "\nURL found:" + bcolors.ENDC)
 
-def discover(url):
+
+def add(balise, quote, word):
+	if balise in word:
+		try:
+			new_url = re.search(balise + '(.*)' + quote, word).group(1)
+		except AttributeError:
+			new_url = re.search(balise + '(.*)' + quote, word)
+		try:
+			new_url = new_url.split("?", 1)[0]
+			new_url = new_url.split("#",  1)[0]
+		except:
+			pass
+		if 'http' not in new_url:
+			try: 
+				if new_url[0] == "." and new_url[1] == "/":
+					new_url = path(url, 2) + new_url.replace('./', '')
+				elif new_url[0] == "/":
+					new_url = path(url, 0) + new_url
+				else:
+					new_url = path(url, 2) + new_url
+			except:
+				pass
+		if new_url not in o and path(url, 1) == path(new_url, 1):
+			o.append(new_url)
+			print(bcolors.WARNING + "find: " + new_url.replace('//', '/') + bcolors.ENDC)
+		elif path(url, 1) != path(new_url, 1):
+			print(bcolors.FAIL + "Ignore: " + new_url.replace('//', '/') + " (not the same site)" + bcolors.ENDC)	
+		elif new_url  in o:
+			print(bcolors.FAIL + "Ignore: " + new_url.replace('//', '/') + " (alredy found)" + bcolors.ENDC)			
+
+
+
+def discover(url, ):
 	try:
 		resp = requests.get(url, timeout=10, cookies=cookie, verify=False, headers = { "User-Agent": useragent})
 		content = resp.text
@@ -103,111 +152,14 @@ def discover(url):
 					if all != 1 and ("@" in word or "mailto" in word or ".html" in word or ".7z" in word or "#" in word or ".png" in word or ".jpg" in word or ".svg" in word or ".jpeg" in word or ".ico" in word or ".css" in word or ".js" in word or ".zip" in word or ".pdf" in word or ".txt" in word or ".gif" in word or ".JPEG" in word or ".PNG" in word or ".JPG" in word):
 						pass
 					else:
-						if 'href="' in word:
-							try:
-								new_url = re.search('href="(.*)"', word).group(1)
-							except AttributeError:
-								new_url = re.search('href="(.*)"', word)
-							new_url = new_url.split(separator, 1)[0]
-							if 'http' in new_url:
-								pass
-							else:
-								new_url = path + "/" + new_url
-							if new_url not in o:
-								o.append(new_url)
-								print(bcolors.WARNING + "find: " + new_url.replace('//', '/') + bcolors.ENDC)
-						if "href='" in word:
-							try:
-								new_url = re.search("href='(.*)'", word).group(1)
-							except AttributeError:
-								new_url = re.search("href='(.*)'", word)
-							new_url = new_url.split(separator, 1)[0]
-							if 'http' in new_url:
-								pass
-							else:
-								new_url = path + "/" + new_url
-							if new_url not in o:
-								o.append(new_url)
-								print(bcolors.WARNING + "find: " + new_url.replace('//', '/') + bcolors.ENDC)
-						if "src='" in word:
-							try:
-								new_url = re.search("src='(.*)'", word).group(1)
-							except AttributeError:
-								new_url = re.search("src='(.*)'", word)
-							new_url = new_url.split(separator, 1)[0]
-							if 'http' in new_url:
-								pass
-							else:
-								new_url = path + "/" + new_url
-							if new_url not in o:
-								o.append(new_url)
-								print(bcolors.WARNING + "find: " + new_url.replace('//', '/') + bcolors.ENDC)
-						if 'src="' in word:
-							try:
-								new_url = re.search('src="(.*)"', word).group(1)
-							except AttributeError:
-								new_url = re.search('src="(.*)"', word)
-							new_url = new_url.split(separator, 1)[0]
-							if 'http' in new_url:
-								pass
-							else:
-								new_url = path + "/" + new_url
-							if new_url not in o:
-								o.append(new_url)
-								print(bcolors.WARNING + "find: " + new_url.replace('//', '/') + bcolors.ENDC)
-						if "action='" in word:
-							try:
-								new_url = re.search("action='(.*)'", word).group(1)
-							except AttributeError:
-								new_url = re.search("action='(.*)'", word)
-							new_url = new_url.split(separator, 1)[0]
-							if 'http' in new_url:
-								pass
-							else:
-								new_url = path + "/" + new_url
-							if new_url not in o:
-								o.append(new_url)
-								print(bcolors.WARNING + "find: " + new_url.replace('//', '/') + bcolors.ENDC)
-						if 'action="' in word:
-							try:
-								new_url = re.search('action="(.*)"', word).group(1)
-							except AttributeError:
-								new_url = re.search('action="(.*)"', word)
-							new_url = new_url.split(separator, 1)[0]
-							if 'http' in new_url:
-								pass
-							else:
-								new_url = path + "/" + new_url
-							if new_url not in o:
-								o.append(new_url)
-								print(bcolors.WARNING + "find: " + new_url.replace('//', '/') + bcolors.ENDC)
-						if "iframe='" in word:
-							try:
-								new_url = re.search("iframe='(.*)'", word).group(1)
-							except AttributeError:
-								new_url = re.search("iframe='(.*)'", word)
-							new_url = new_url.split(separator, 1)[0]
-							if 'http' in new_url:
-								pass
-							else:
-								new_url = path + "/" + new_url
-							if new_url not in o:
-								o.append(new_url)
-								print(bcolors.WARNING + "find: " + new_url.replace('//', '/') + bcolors.ENDC)
-						if 'iframe="' in word:
-							try:
-								new_url = re.search('iframe="(.*)"', word).group(1)
-							except AttributeError:
-								new_url = re.search('iframe="(.*)"', word)
-							new_url = new_url.split(separator, 1)[0]
-							if 'http' in new_url:
-								pass
-							else:
-								new_url = path + "/" + new_url
-							if new_url not in o:
-								o.append(new_url)
-								print(bcolors.WARNING + "find: " + new_url.replace('//', '/') + bcolors.ENDC)
-
+						add('href="', '"', word)
+						add("href='", "'", word)
+						add("src='", "'", word)
+						add('src="', '"', word)
+						add("action='", "'", word)
+						add('action="', '"', word)
+						add("iframe='", "'", word)
+						add('iframe="', '"', word)
 				except TypeError:
 					pass
 	except requests.exceptions.ConnectTimeout:
@@ -224,7 +176,7 @@ while y < len(o):
 
 if len(o) != 0:
 	print(bcolors.OKCYAN + "\n----------------------------------------\n" + bcolors.ENDC)
-	print(bcolors.BOLD + bcolors.FAIL + "All URL found on :", path + bcolors.ENDC)
+	print(bcolors.UNDERLINE + bcolors.BOLD + bcolors.FAIL + "All URL found on:", path(url, 0) + bcolors.ENDC)
 	y=0
 	while y < len(o):
 		print(o[y].replace('//', '/'))
@@ -234,20 +186,20 @@ else:
 
 if len(o) != 0:
 	print(bcolors.OKCYAN + "\n----------------------------------------\n" + bcolors.ENDC)
-	testcode = input(bcolors.BOLD + bcolors.OKCYAN + "Do you want to test each status-code ? [Y/n]: " + bcolors.ENDC)
+	testcode = input(bcolors.BOLD + bcolors.OKBLUE + "Do you want to test each status-code ? [Y/n]: " + bcolors.ENDC)
 
 try:
 	if testcode == "y" or testcode == "Y" or testcode == "":
-		print(bcolors.BOLD + bcolors.FAIL + "All status code:" + bcolors.ENDC)
+		print(bcolors.UNDERLINE + bcolors.BOLD + bcolors.FAIL + "All status code:" + bcolors.ENDC)
 		for x in o:
 			code = requests.get(x, timeout=10, cookies=cookie, verify=False, headers = {"User-Agent": useragent})
 			if code.status_code == 200:
 				code = (bcolors.OKGREEN + "[200] " + bcolors.ENDC)
 			elif code.status_code == 403:
 				code = (bcolors.FAIL + "[403] " + bcolors.ENDC)
+				forbidden.append(x)
 			elif code.status_code == 404:
 				code = (bcolors.WARNING + "[404] " + bcolors.ENDC)
-				forbidden.append(x)
 			else:
 				code = (bcolors.WARNING + "[" + str(code.status_code) + "] " + bcolors.ENDC)
 			print(code + bcolors.OKCYAN +  x.replace('//', '/') + bcolors.ENDC)
@@ -258,14 +210,14 @@ except:
 
 if len(forbidden) != 0:
 	print(bcolors.OKCYAN + "\n----------------------------------------\n" + bcolors.ENDC)
-	bypass = input(bcolors.BOLD + bcolors.OKCYAN + "Do you want to try bypass each 403 page ? [Y/n]: " + bcolors.ENDC)
+	bypass = input(bcolors.BOLD + bcolors.OKBLUE + "Do you want to try bypass each 403 page ? [Y/n]: " + bcolors.ENDC)
 else:
 	bypass = 0
 if bypass == "y" or bypass == "Y" or bypass == "":
-	print(bcolors.BOLD + bcolors.FAIL + "All 403 Bypass found:" + bcolors.ENDC)
+	print(bcolors.UNDERLINE + bcolors.BOLD + bcolors.FAIL + "All 403 Bypass found:" + bcolors.ENDC)
 	for x in forbidden:
-		urll = x.rsplit(separator2, 1)[1]
-		arg = x.rsplit(separator2, 1)[0]
+		urll = x.rsplit("/", 1)[1]
+		arg = x.rsplit("/", 1)[0]
 
 		payloads = ["/","/*","/%2f/","/./","./.","/*/","?","??","&","#","%","%20","%09","/..;/","../","..%2f","..;/",".././","..%00/","..%0d","..%5c","..%ff/","%2e%2e%2f",".%2e/","%3f","%26","%23",".json"]
 
@@ -278,7 +230,7 @@ if bypass == "y" or bypass == "Y" or bypass == "":
 				pass
 
 
-		r1 = requests.get(x, headers={"X-Original-URL":path, "User-Agent": useragent} , allow_redirects=False , verify=False , timeout=5, cookies=cookie)
+		r1 = requests.get(x, headers={"X-Original-URL":path(url, 0), "User-Agent": useragent} , allow_redirects=False , verify=False , timeout=5, cookies=cookie)
 		if r1.status_code == 200:
 			print(bcolors.OKGREEN + "[200] " + bcolors.ENDC + bcolors.OKCYAN + x.replace('//', '/') + bcolors.ENDC + ' : ' +"(X-Original-URL: "+ urll + ')')
 			ok = 1
