@@ -98,10 +98,13 @@ def path(url, strict):
 print(bcolors.UNDERLINE + bcolors.BOLD + bcolors.FAIL + "\nSearching misconf :" + bcolors.ENDC)
 misconf = ["/robots.txt", "/server-status", "/.git", "/git", "/.gitignore", "/.htpasswd", "/.htaccess", "/phpmyadmin", "/adminer.php", "/index.php~", "/index.php.old", "/index.php.bak", "/README.md", "/README", "/.env", "/TODO.md", "/LICENCE.txt", "/LICENCE", "/htaccess.txt", "/phpinfo.php", "/.ssh", "/install", "/install.php", "/LICENSE", "/LICENSE.txt", "/server-info", "/backup.zip", "/backup", "/backups", "/archive", "/archives"]
 for x in misconf:
-	t1 = requests.get(path(url, 0) + x, timeout=10, cookies=cookie, verify=False, headers = {"User-Agent": useragent})
-	if t1.status_code == 200:
-		print(bcolors.OKGREEN + "[MISCONF] " + bcolors.ENDC + bcolors.OKCYAN + x + " was found" + bcolors.ENDC)
-		m = 1
+	try:
+		t1 = requests.get(path(url, 0) + x, timeout=10, cookies=cookie, verify=False, headers = {"User-Agent": useragent})
+		if t1.status_code == 200:
+			print(bcolors.OKGREEN + "[MISCONF] " + bcolors.ENDC + bcolors.OKCYAN + x + " was found" + bcolors.ENDC)
+			m = 1
+	except:
+		pass
 if m == 0:
 	print(bcolors.FAIL + "\nNo misconf find !", url + bcolors.ENDC)
 
