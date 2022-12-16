@@ -107,6 +107,8 @@ for x in misconf:
 		pass
 if m == 0:
 	print(bcolors.FAIL + "\nNo misconf find !", url + bcolors.ENDC)
+else:
+        input(bcolors.WARNING + "\nPress \"ENTER\" to continue:" + bcolors.ENDC)
 
 
 print(bcolors.OKCYAN + "\n----------------------------------------" + bcolors.ENDC)
@@ -137,10 +139,10 @@ def add(balise, quote, word):
 		if new_url not in o and path(url, 1) == path(new_url, 1):
 			o.append(new_url)
 			print(bcolors.WARNING + "find: " + new_url.replace('//', '/') + bcolors.ENDC)
-		elif path(url, 1) != path(new_url, 1):
-			print(bcolors.FAIL + "Ignore: " + new_url.replace('//', '/') + " (not the same site)" + bcolors.ENDC)	
-		elif new_url  in o:
-			print(bcolors.FAIL + "Ignore: " + new_url.replace('//', '/') + " (alredy found)" + bcolors.ENDC)			
+		#elif path(url, 1) != path(new_url, 1):
+		#	print(bcolors.FAIL + "Ignore: " + new_url.replace('//', '/') + " (not the same site)" + bcolors.ENDC)	
+		#elif new_url  in o:
+		#	print(bcolors.FAIL + "Ignore: " + new_url.replace('//', '/') + " (alredy found)" + bcolors.ENDC)			
 
 
 
@@ -152,7 +154,7 @@ def discover(url, ):
 		for line in content.split():
 			for word in line.split():
 				try:
-					if all != 1 and ("@" in word or "mailto" in word or ".html" in word or ".7z" in word or "#" in word or ".png" in word or ".jpg" in word or ".svg" in word or ".jpeg" in word or ".ico" in word or ".css" in word or ".js" in word or ".zip" in word or ".pdf" in word or ".txt" in word or ".gif" in word or ".JPEG" in word or ".PNG" in word or ".JPG" in word):
+					if all != 1 and ("@" in word or "tel:" in word or "mailto:" in word or ".html" in word or ".7z" in word or "#" in word or ".png" in word or ".jpg" in word or ".svg" in word or ".jpeg" in word or ".ico" in word or ".css" in word or ".js" in word or ".zip" in word or ".pdf" in word or ".txt" in word or ".gif" in word or ".JPEG" in word or ".PNG" in word or ".JPG" in word):
 						pass
 					else:
 						add('href="', '"', word)
@@ -163,9 +165,9 @@ def discover(url, ):
 						add('action="', '"', word)
 						add("iframe='", "'", word)
 						add('iframe="', '"', word)
-				except TypeError:
+				except:
 					pass
-	except requests.exceptions.ConnectTimeout:
+	except:
 		pass
 
 
