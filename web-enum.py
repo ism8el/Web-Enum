@@ -96,7 +96,7 @@ def path(url, strict):
 		return pre + url + "/"
 
 print(bcolors.UNDERLINE + bcolors.BOLD + bcolors.FAIL + "\nSearching misconf :" + bcolors.ENDC)
-misconf = ["/robots.txt", "/server-status", "/.git", "/git", "/.gitignore", "/.htpasswd", "/.htaccess", "/phpmyadmin", "/adminer.php", "/index.php~", "/index.php.old", "/index.php.bak", "/README.md", "/README", "/.env", "/TODO.md", "/LICENCE.txt", "/LICENCE", "/htaccess.txt", "/phpinfo.php", "/.ssh", "/install", "/install.php", "/LICENSE", "/LICENSE.txt", "/server-info", "/backup.zip", "/backup", "/backups", "/archive", "/archives"]
+misconf = ["/robots.txt", "/server-status", "/.git", "/git", "/.gitignore", "/.htpasswd", "/.htaccess", "/phpmyadmin", "/adminer.php", "/index.php~", "/index.php.old", "/index.php.bak", "/README.md", "/README", "/.env", "/TODO.md", "/LICENCE.txt", "/LICENCE", "/htaccess.txt", "/phpinfo.php", "/.ssh", "/install", "/install.php", "/LICENSE", "/LICENSE.txt", "/server-info", "/backup.zip", "/backup", "/backups", "/archive", "/archives", "_wpeprivate/config.json"]
 for x in misconf:
 	try:
 		t1 = requests.get(path(url, 0) + x, timeout=10, cookies=cookie, verify=False, headers = {"User-Agent": useragent})
